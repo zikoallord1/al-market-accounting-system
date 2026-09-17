@@ -1,0 +1,20 @@
+{
+  "name": "al-market-accounting-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "نظام الماركت المحاسبي",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {}
+}
