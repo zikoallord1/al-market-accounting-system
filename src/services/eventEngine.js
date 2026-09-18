@@ -158,6 +158,12 @@ export function applySupplierPaymentEvent(state,payment) {
   },event);
 }
 
+export function getFifoInventoryValue(state,itemId) {
+  return getFifoBatches(state,itemId).reduce((sum,b) =>
+    sum + money(b.remainingQuantity) * money(b.unitCost), 0
+  );
+}
+
 export function getCurrentStock(state,itemId) {
   const item=(state.items || []).find(x => x.id===itemId);
   if (!item) return 0;
