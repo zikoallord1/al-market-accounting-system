@@ -19,6 +19,14 @@ jobs:
       - run: npm run build
       - name: Runtime smoke test
         run: |
-          npm install --no-save playwright@1.55.0 && npx playwright install --with-deps chromium
-          (npx --yes http-server@14.1.1 dist -p 4173 >/tmp/al-market-server.log 2>&1 &)
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          npx --yes http-server@14.1.1 dist -p 4173 >/tmp/al-market-server.log 2>&1 &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
           node --input-type=module -e "import { chromium } from 'playwright'; const b=await chromium.launch({headless:true}); const p=await b.newPage(); const errors=[]; p.on('pageerror',e=>errors.push(e.message)); p.on('console',m=>{if(m.type()==='error') errors.push(m.text())}); await p.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'}); await p.waitForSelector('#root > *',{timeout:10000}); const visible=await p.locator('#root').evaluate(el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect(); return !!(r.width&&r.height&&s.display!=='none'&&s.visibility!=='hidden')}); if(!visible||errors.length) { console.error({visible,errors}); process.exit(1); } console.log('Runtime smoke test passed: root is visible and no browser errors were reported.'); await b.close();"
+          kill $SERVER_PID
