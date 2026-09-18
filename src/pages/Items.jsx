@@ -21,7 +21,9 @@ export default function Items({ state, setState }) {
       minStock:Math.max(Number(form.minStock)||0,0)
     };
     if(editing){
-      setState({...state,items:state.items.map(item=>item.id===editing?{...item,...payload,openingStock:Number(form.openingStock)||0,stock:Number(form.openingStock)||0,updatedAt:new Date().toISOString()}:item)});
+      // تعديل بيانات الصنف لا يغيّر الرصيد الفعلي؛ الرصيد لا يتحرك إلا عبر
+      // عملية مخزنية معتمدة أو الرصيد الافتتاحي عند إنشاء الصنف.
+      setState({...state,items:state.items.map(item=>item.id===editing?{...item,...payload,updatedAt:new Date().toISOString()}:item)});
     }else{
       const openingStock=Math.max(Number(form.openingStock)||0,0);
       setState({...state,items:[...state.items,{...payload,id:createId('item'),openingStock,stock:openingStock,createdAt:new Date().toISOString()}]});
@@ -45,7 +47,7 @@ export default function Items({ state, setState }) {
       <input type="number" min="1" placeholder="معامل التحويل" value={form.conversionFactor} onChange={e=>setForm({...form,conversionFactor:e.target.value})}/>
       <input type="number" min="0" placeholder="التكلفة الأساسية" value={form.cost} onChange={e=>setForm({...form,cost:e.target.value})}/>
       <input type="number" min="0" placeholder="سعر البيع الأساسي" value={form.price} onChange={e=>setForm({...form,price:e.target.value})}/>
-      <input type="number" min="0" placeholder="الرصيد الافتتاحي بالأساسية" value={form.openingStock} onChange={e=>setForm({...form,openingStock:e.target.value})}/>
+      <input type="number" min="0" placeholder="الرصيد الافتتاحي بالأساسية" value={form.openingStock} disabled={Boolean(editing)} onChange={e=>setForm({...form,openingStock:e.target.value})}/>
       <input type="number" min="0" placeholder="حد التنبيه" value={form.minStock} onChange={e=>setForm({...form,minStock:e.target.value})}/>
       <button className="primary-btn" onClick={save}><Plus size={18}/>{editing?'حفظ التعديل':'إضافة صنف'}</button>
       {editing&&<button className="secondary-btn" onClick={reset}>إلغاء</button>}
