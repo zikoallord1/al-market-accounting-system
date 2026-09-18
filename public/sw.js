@@ -1,5 +1,5 @@
 const CACHE='al-market-v1';
-const ASSETS=['/','/index.html'];
+const ASSETS=['./','./index.html'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{
