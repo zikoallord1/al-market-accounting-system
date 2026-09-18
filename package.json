@@ -17,24 +17,38 @@
   "dependencies": {
     "@capacitor/android": "latest",
     "@capacitor/core": "latest",
-    "@vitejs/plugin-react": "latest",
-    "electron": "latest",
-    "electron-builder": "latest",
     "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
     "lucide-react": "latest"
   },
   "devDependencies": {
-    "@capacitor/cli": "latest"
+    "@capacitor/cli": "latest",
+    "@vitejs/plugin-react": "latest",
+    "electron": "latest",
+    "electron-builder": "latest"
   },
   "build": {
     "appId": "com.zikoallord.almarketaccounting.desktop",
     "productName": "نظام الماركت المحاسبي",
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "electron/**/*", "package.json"],
-    "win": { "target": ["nsis", "portable"] },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
     "artifactName": "${productName}-${version}-${arch}.${ext}"
   }
 }
