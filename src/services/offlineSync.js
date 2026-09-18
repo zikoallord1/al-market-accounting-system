@@ -1,6 +1,7 @@
 const QUEUE_KEY='al-market-accounting-system-offline-queue-v1';
 const DEVICE_KEY='al-market-accounting-system-device-v1';
 const SYNC_KEY='al-market-accounting-system-sync-v1';
+const DEFAULT_SYNC_URL='http://localhost:8787';
 
 export function getDeviceId(){let id=localStorage.getItem(DEVICE_KEY);if(!id){id='device_'+Date.now()+'_'+Math.random().toString(36).slice(2);localStorage.setItem(DEVICE_KEY,id)}return id}
 export function readOfflineQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]')}catch{return[]}}
@@ -13,25 +14,30 @@ export function queueIfOffline(operation){return getConnectivity()?false:(queueO
 export function createSyncEnvelope(event){return {id:event.id,deviceId:getDeviceId(),createdAt:new Date().toISOString(),event}}
 export function readSyncState(){try{return JSON.parse(localStorage.getItem(SYNC_KEY)||'{}')}catch{return{}}}
 export function writeSyncState(patch){const next={...readSyncState(),...patch,updatedAt:new Date().toISOString()};localStorage.setItem(SYNC_KEY,JSON.stringify(next));return next}
-export function getSyncStatus(){const q=readOfflineQueue();const s=readSyncState();return {online:getConnectivity(),pending:q.filter(x=>x.status==='pending').length,conflicts:q.filter(x=>x.status==='conflict').length,deviceId:getDeviceId(),lastSyncAt:s.lastSyncAt||null,syncing:Boolean(s.syncing)}}
-
-export async function processOfflineQueue({send,onConflict}={}) {
-  if(!getConnectivity()) return {processed:0,pending:readOfflineQueue().length,offline:true};
-  const queue=readOfflineQueue();let processed=0;
+export function getSyncUrl(){return localStorage.getItem('al-market-accounting-system-sync-url-v1')||DEFAULT_SYNC_URL}
+export function setSyncUrl(url){const clean=String(url||'').trim().replace(/\/$/,'');if(!/^https?:\/\//i.test(clean))throw new Error('عنوان خادم المزامنة غير صالح');localStorage.setItem('al-market-accounting-system-sync-url-v1',clean);return clean}
+export async function sendToSyncServer(envelope){
+ const response=await fetch(getSyncUrl()+'/api/sync/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(envelope)});
+ let data={};try{data=await response.json()}catch{}
+ if(response.status===409||data.conflict)return {conflict:true,reason:data.reason||'تعارض يحتاج مراجعة',server:data.existing};
+ if(!response.ok)throw new Error(data.error||('فشل الاتصال بخادم المزامنة: '+response.status));
+ return data;
+}
+export async function checkSyncServer(){const response=await fetch(getSyncUrl()+'/health');if(!response.ok)throw new Error('خادم المزامنة غير متاح');return response.json()}
+export async function processOfflineQueue({send=sendToSyncServer,onConflict}={}) {
+  if(!getConnectivity()) return {processed:0,pending:readOfflineQueue().filter(x=>x.status==='pending').length,offline:true};
+  const queue=readOfflineQueue();let processed=0,failed=0;
   writeSyncState({syncing:true});
   try{
     for(const operation of queue.filter(x=>x.status==='pending')){
       try{
-        if(typeof send!=='function') break;
         const result=await send(createSyncEnvelope(operation));
         if(result?.conflict){markConflict(operation.id,result.reason||'تعارض يحتاج مراجعة');if(onConflict)onConflict(operation,result);continue}
         markSynced(operation.id);processed++;
-      }catch(error){
-        if(error?.conflict||error?.code==='CONFLICT'){markConflict(operation.id,error.message||'تعارض يحتاج مراجعة');if(onConflict)onConflict(operation,error);continue}
-        break;
-      }
+      }catch(error){failed++;writeSyncState({lastError:error.message});break}
     }
-    writeSyncState({syncing:false,lastSyncAt:new Date().toISOString()});
-  }catch(error){writeSyncState({syncing:false});throw error}
-  return {processed,pending:readOfflineQueue().length,offline:false};
+    const pending=readOfflineQueue().filter(x=>x.status==='pending').length;
+    writeSyncState({syncing:false,lastSyncAt:processed?new Date().toISOString():readSyncState().lastSyncAt||null});
+    return {processed,pending,failed,offline:false};
+  }catch(error){writeSyncState({syncing:false,lastError:error.message});throw error}
 }
