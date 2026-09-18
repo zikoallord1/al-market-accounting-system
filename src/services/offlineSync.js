@@ -8,4 +8,5 @@ export function markConflict(id,reason){const next=readOfflineQueue().map(x=>x.i
 export function clearOfflineQueue(){localStorage.removeItem(QUEUE_KEY)}
 export function getConnectivity(){return typeof navigator==='undefined'?true:navigator.onLine}
 export function createSyncEnvelope(event){return {id:event.id,deviceId:getDeviceId(),createdAt:new Date().toISOString(),event}}
+export function queueIfOffline(operation){return getConnectivity()?false:(queueOperation(operation),true)}
 export function getSyncStatus(){const q=readOfflineQueue();return {online:getConnectivity(),pending:q.filter(x=>x.status==='pending').length,conflicts:q.filter(x=>x.status==='conflict').length,deviceId:getDeviceId()}}
