@@ -1,0 +1,11 @@
+{
+  "name": "نظام الماركت المحاسبي",
+  "short_name": "الماركت المحاسبي",
+  "start_url": "/",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "icons": []
+}
