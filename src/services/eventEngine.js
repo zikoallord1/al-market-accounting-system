@@ -180,3 +180,7 @@ export function getSupplierBalance(state,supplierId) {
   return opening + (state.supplierTransactions || []).filter(x=>x.supplierId===supplierId)
     .reduce((s,x)=>s+money(x.credit)-money(x.debit),0);
 }
+
+
+export function applyFinanceEvent(state, operation, type) { if(alreadyApplied(state,operation.id)) return state; const key=type==='EXPENSE_CREATED'?'expenses':'revenues'; const event=createBusinessEvent(type,operation); return appendAudit({...state,[key]:[...(state[key]||[]),operation],financeTransactions:[...(state.financeTransactions||[]),{...operation,type:type==='EXPENSE_CREATED'?'expense':'revenue'}]},event); }
+export function applyRemoteBusinessEvent(state,event) { if(!event?.type||!event?.payload?.id) throw new Error('عملية مزامنة غير صالحة'); switch(event.type){ case 'SALE_CREATED': return applySalesEvent(state,event.payload); case 'PURCHASE_CREATED': return applyPurchaseEvent(state,event.payload); case 'CUSTOMER_PAYMENT_CREATED': return applyCustomerPaymentEvent(state,event.payload); case 'SUPPLIER_PAYMENT_CREATED': return applySupplierPaymentEvent(state,event.payload); case 'EXPENSE_CREATED': case 'REVENUE_CREATED': return applyFinanceEvent(state,event.payload,event.type); default: throw new Error('نوع عملية مزامنة غير مدعوم: '+event.type); } }
