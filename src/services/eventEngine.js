@@ -115,7 +115,7 @@ export function applyPurchaseEvent(state,purchase) {
     stockBatches:[...(state.stockBatches || []),...batches],
     supplierTransactions:credit > 0
       ? [...(state.supplierTransactions || []),{id:createId('suptrx'),supplierId:purchase.supplierId,
-          referenceId:purchase.id,type:'PURCHASE_CREDIT',debit:credit,credit:0,amount:credit,
+          referenceId:purchase.id,type:'PURCHASE_CREDIT',debit:0,credit:credit,amount:credit,
           occurredAt:purchase.createdAt,currency:purchase.currency || 'YER'}]
       : (state.supplierTransactions || []),
     financeTransactions:[...(state.financeTransactions || []),{id:createId('fintrx'),referenceId:purchase.id,
