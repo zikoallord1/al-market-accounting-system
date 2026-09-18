@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "sync-server": "node server/sync-server.js"
+    "sync-server": "node server/sync-server.js",
+    "test:sync": "node server/sync-server.test.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
