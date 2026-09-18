@@ -172,5 +172,5 @@ export function getCustomerBalance(state,customerId) {
 export function getSupplierBalance(state,supplierId) {
   const opening=money((state.suppliers || []).find(x=>x.id===supplierId)?.openingBalance);
   return opening + (state.supplierTransactions || []).filter(x=>x.supplierId===supplierId)
-    .reduce((s,x)=>s+money(x.debit)-money(x.credit),0);
+    .reduce((s,x)=>s+money(x.credit)-money(x.debit),0);
 }
