@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, Wallet, Download } from 'lucide-react';
 import { createId } from '../services/storage';
+import { applyFinanceEvent } from '../services/eventEngine';
 import { downloadBackup } from '../services/backup';
 import { queueIfOffline } from '../services/offlineSync';
 
@@ -30,15 +31,8 @@ export default function FinanceCenter({ state, setState }) {
       createdAt: new Date().toISOString()
     };
 
-    const nextState={
-      ...state,
-      [key]: [...(state[key] || []), row],
-      financeTransactions: [
-        ...(state.financeTransactions || []),
-        { ...row, type }
-      ]
-    };
-    setState(nextState);
+    const eventType=type==='expense'?'EXPENSE_CREATED':'REVENUE_CREATED';
+    setState(applyFinanceEvent(state,row,eventType));
     queueIfOffline({id:row.id,type:type==='expense'?'EXPENSE_CREATED':'REVENUE_CREATED',payload:row});
     setDescription('');
     setAmount('');
