@@ -25,7 +25,7 @@ const server=http.createServer(async(req,res)=>{
    db.events[event.id]=record;db.order.push(event.id);write(db);
    return json(res,201,{accepted:true,idempotent:false,serverEvent:record});
   }
-  if(req.method==='GET'&&req.url==='/api/sync/events'){const db=read();return json(res,200,{events:db.order.map(id=>db.events[id])})}
+  if(req.method==='GET'&&(req.url==='/api/sync/events'||req.url.startsWith('/api/sync/events?'))){const db=read();const u=new URL(req.url,'http://localhost');const after=Math.max(Number(u.searchParams.get('after')||0),0);const events=db.order.slice(after).map(id=>db.events[id]);return json(res,200,{events,nextCursor:after+events.length,total:db.order.length})}
   return json(res,404,{error:'Not found'});
  }catch(e){return json(res,500,{error:e.message||'Server error'})}
 });
