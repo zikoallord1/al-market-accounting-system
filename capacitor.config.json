@@ -1,0 +1,6 @@
+{
+  "appId": "com.zikoallord.almarketaccounting",
+  "appName": "نظام الماركت المحاسبي",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" }
+}
