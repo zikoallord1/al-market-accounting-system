@@ -1,22 +1,40 @@
 {
   "name": "al-market-accounting-system",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "نظام الماركت المحاسبي",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "sync-server": "node server/sync-server.js",
-    "test:sync": "node server/sync-server.test.js"
+    "test:sync": "node server/sync-server.test.js",
+    "desktop:installer": "npm run build && electron-builder",
+    "mobile:sync": "npm run build && cap sync android"
   },
   "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest",
     "@vitejs/plugin-react": "latest",
+    "electron": "latest",
+    "electron-builder": "latest",
     "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
     "lucide-react": "latest"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@capacitor/cli": "latest"
+  },
+  "build": {
+    "appId": "com.zikoallord.almarketaccounting.desktop",
+    "productName": "نظام الماركت المحاسبي",
+    "directories": { "output": "release" },
+    "files": ["dist/**/*", "electron/**/*", "package.json"],
+    "win": { "target": ["nsis", "portable"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "artifactName": "${productName}-${version}-${arch}.${ext}"
+  }
 }
